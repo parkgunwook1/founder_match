@@ -1,7 +1,9 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useAuthStore, AuthUser } from '../../store/useAuthStore';
+import { userApi } from '../../api/userApi';
+import { getAxiosErrorMessage } from '../../utils/httpError';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -9,8 +11,9 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!email || !password) {
@@ -18,15 +21,24 @@ export const LoginPage = () => {
       return;
     }
 
-    const mockUser = {
-      id: crypto.randomUUID?.() ?? String(Date.now()),
-      email,
-      nickname: email.split('@')[0],
-      interests: ['AI', '핀테크']
-    };
+    setError('');
+    setLoading(true);
 
-    login(mockUser);
-    navigate('/user/profile', { replace: true });
+    try {
+      const loginResponse = await userApi.login({ email, password });
+      const userResponse = await userApi.getUser(loginResponse.userId);
+      const authUser: AuthUser = {
+        ...userResponse,
+        interests: []
+      };
+
+      login(authUser);
+      navigate('/user/profile', { replace: true });
+    } catch (loginError) {
+      setError(getAxiosErrorMessage(loginError, '로그인에 실패했습니다. 입력 정보를 확인해 주세요.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,7 +68,9 @@ export const LoginPage = () => {
           />
         </Field>
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        <SubmitButton type="submit">로그인</SubmitButton>
+        <SubmitButton type="submit" disabled={loading}>
+          {loading ? '로그인 중...' : '로그인'}
+        </SubmitButton>
         <HelperText>
           아직 회원이 아니신가요? <Link to="/signup">회원가입</Link>
         </HelperText>
@@ -119,6 +133,11 @@ const SubmitButton = styled.button`
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const HelperText = styled.p`
@@ -136,4 +155,6 @@ const ErrorMessage = styled.span`
   color: #dc2626;
   font-size: 0.9rem;
 `;
+
+
 

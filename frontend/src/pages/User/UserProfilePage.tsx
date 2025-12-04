@@ -9,6 +9,9 @@ export const UserProfilePage = () => {
     return <Navigate to="/login" replace />;
   }
 
+  const interests = user.interests ?? [];
+  const formattedCreatedAt = new Date(user.createdAt).toLocaleString('ko-KR');
+
   return (
     <ProfileWrapper>
       <Hero>
@@ -17,6 +20,14 @@ export const UserProfilePage = () => {
           <Nickname>{user.nickname}</Nickname>
           <Email>{user.email}</Email>
           <Tagline>{user.tagline || '한 줄 소개를 아직 작성하지 않았습니다.'}</Tagline>
+          <ContactRow>
+            <Label>연락 수단</Label>
+            <Value>{user.contact}</Value>
+          </ContactRow>
+          <ContactRow>
+            <Label>가입일</Label>
+            <Value>{formattedCreatedAt}</Value>
+          </ContactRow>
         </Info>
         <EditButton
           type="button"
@@ -27,9 +38,9 @@ export const UserProfilePage = () => {
       </Hero>
       <Section>
         <SectionTitle>관심 분야</SectionTitle>
-        {user.interests.length > 0 ? (
+        {interests.length > 0 ? (
           <Chips>
-            {user.interests.map((interest) => (
+            {interests.map((interest) => (
               <Chip key={interest}>{interest}</Chip>
             ))}
           </Chips>
@@ -90,6 +101,22 @@ const Tagline = styled.p`
   margin: 0;
 `;
 
+const ContactRow = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+`;
+
+const Label = styled.span`
+  font-weight: 600;
+  color: #4b5566;
+`;
+
+const Value = styled.span`
+  color: #1f2a44;
+`;
+
 const EditButton = styled.button`
   padding: 12px 24px;
   border-radius: 999px;
@@ -128,4 +155,6 @@ const EmptyState = styled.p`
   color: #98a1b3;
   margin: 0;
 `;
+
+
 

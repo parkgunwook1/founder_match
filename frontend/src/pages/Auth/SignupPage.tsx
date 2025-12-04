@@ -1,6 +1,8 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { userApi } from '../../api/userApi';
+import { getAxiosErrorMessage } from '../../utils/httpError';
 
 const INTEREST_OPTIONS = ['AI', '헬스케어', '핀테크', '교육', '커머스'];
 
@@ -9,8 +11,10 @@ export const SignupPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
+  const [contact, setContact] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleInterestToggle = (interest: string) => {
     setInterests((prev) =>
@@ -18,17 +22,26 @@ export const SignupPage = () => {
     );
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!email || !password || !nickname) {
+    if (!email || !password || !nickname || !contact) {
       setError('필수 입력값을 모두 채워 주세요.');
       return;
     }
 
-    // TODO: 추후 axios로 실제 회원가입 API 연동
-    alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
-    navigate('/login', { replace: true });
+    setError('');
+    setLoading(true);
+
+    try {
+      await userApi.signup({ email, password, nickname, contact });
+      alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+      navigate('/login', { replace: true });
+    } catch (signupError) {
+      setError(getAxiosErrorMessage(signupError, '회원가입 중 오류가 발생했습니다.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,6 +67,16 @@ export const SignupPage = () => {
               value={nickname}
               onChange={(event) => setNickname(event.target.value)}
               placeholder="예: ProductHunter"
+              required
+            />
+          </Field>
+          <Field>
+            <Label htmlFor="contact">연락 수단*</Label>
+            <Input
+              id="contact"
+              value={contact}
+              onChange={(event) => setContact(event.target.value)}
+              placeholder="예: kakao:id123"
               required
             />
           </Field>
@@ -85,7 +108,9 @@ export const SignupPage = () => {
           </Interests>
         </Field>
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        <SubmitButton type="submit">회원가입</SubmitButton>
+        <SubmitButton type="submit" disabled={loading}>
+          {loading ? '회원가입 처리 중...' : '회원가입'}
+        </SubmitButton>
       </AuthForm>
     </AuthContainer>
   );
@@ -166,10 +191,17 @@ const SubmitButton = styled.button`
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const ErrorMessage = styled.span`
   color: #dc2626;
   font-size: 0.9rem;
 `;
+
+
 

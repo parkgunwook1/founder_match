@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 
 export type AuthUser = {
-  id: string;
+  id: number;
   email: string;
   nickname: string;
+  contact: string;
+  createdAt: string;
   tagline?: string;
-  interests: string[];
+  interests?: string[];
 };
 
 type AuthState = {
@@ -26,4 +28,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 // TODO: 필요 시 localStorage 연동으로 새로고침 후에도 로그인 상태를 복원할 수 있도록 확장
+
+
 
