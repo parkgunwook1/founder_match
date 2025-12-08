@@ -4,6 +4,8 @@ import { HomePage } from '../pages/Home/HomePage';
 import { LoginPage } from '../pages/Auth/LoginPage';
 import { SignupPage } from '../pages/Auth/SignupPage';
 import { UserProfilePage } from '../pages/User/UserProfilePage';
+import { FounderProfilesPage } from '../pages/Profile/FounderProfilesPage';
+import { FounderProfileFormPage } from '../pages/Profile/FounderProfileFormPage';
 
 export const AppRouter = () => (
   <BrowserRouter>
@@ -13,6 +15,8 @@ export const AppRouter = () => (
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/user/profile" element={<UserProfilePage />} />
+        <Route path="/user/profile/edit" element={<FounderProfileFormPage />} />
+        <Route path="/profiles" element={<FounderProfilesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MainLayout>

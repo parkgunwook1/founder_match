@@ -36,4 +36,9 @@ out/
 ### VS Code ###
 .vscode/
 
+# Frontend artifacts
+frontend/node_modules/
+node_modules/
+yarn.lock
+
 frontend/node_modules/

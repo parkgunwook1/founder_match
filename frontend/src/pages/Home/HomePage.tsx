@@ -20,8 +20,7 @@ export const HomePage = () => {
   const navigate = useNavigate();
 
   const handleFindFounders = () => {
-    // TODO: 추후 창업자 리스트 페이지로 연결 예정
-    alert('창업자 리스트 페이지가 곧 준비됩니다!');
+    navigate('/profiles');
   };
 
   const handleCreateProfile = () => {

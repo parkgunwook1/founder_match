@@ -1,16 +1,28 @@
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useFounderProfileStore } from '../../store/useFounderProfileStore';
 
 export const UserProfilePage = () => {
+  const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
+  const profile = useFounderProfileStore((state) => state.profile);
+  const fetchProfile = useFounderProfileStore((state) => state.fetchProfile);
+  const profileLoading = useFounderProfileStore((state) => state.isLoading);
+  const profileError = useFounderProfileStore((state) => state.error);
 
   if (!isLoggedIn || !user) {
     return <Navigate to="/login" replace />;
   }
 
+  useEffect(() => {
+    fetchProfile(user.id);
+  }, [fetchProfile, user.id]);
+
   const interests = user.interests ?? [];
   const formattedCreatedAt = new Date(user.createdAt).toLocaleString('ko-KR');
+  const handleEditClick = () => navigate('/user/profile/edit');
 
   return (
     <ProfileWrapper>
@@ -29,11 +41,8 @@ export const UserProfilePage = () => {
             <Value>{formattedCreatedAt}</Value>
           </ContactRow>
         </Info>
-        <EditButton
-          type="button"
-          onClick={() => alert('프로필 수정 기능은 추후 구현 예정입니다.')}
-        >
-          프로필 수정하기
+        <EditButton type="button" onClick={handleEditClick}>
+          창업자 프로필 {profile ? '수정하기' : '만들기'}
         </EditButton>
       </Hero>
       <Section>
@@ -46,6 +55,50 @@ export const UserProfilePage = () => {
           </Chips>
         ) : (
           <EmptyState>선택된 관심 분야가 없습니다.</EmptyState>
+        )}
+      </Section>
+      <Section>
+        <SectionTitle>창업자 프로필</SectionTitle>
+        {profileLoading ? (
+          <EmptyState>프로필 정보를 불러오는 중입니다...</EmptyState>
+        ) : profileError ? (
+          <ErrorText>{profileError}</ErrorText>
+        ) : profile ? (
+          <FounderCard>
+            <MetaRow>
+              <MetaLabel>역할</MetaLabel>
+              <MetaValue>{profile.role}</MetaValue>
+            </MetaRow>
+            <MetaRow>
+              <MetaLabel>핵심 스킬</MetaLabel>
+              <ChipRow>
+                {profile.skills.map((skill) => (
+                  <Chip key={skill}>{skill}</Chip>
+                ))}
+              </ChipRow>
+            </MetaRow>
+            <MetaRow>
+              <MetaLabel>관심 분야</MetaLabel>
+              <ChipRow>
+                {profile.interests.map((interest) => (
+                  <Chip key={interest}>{interest}</Chip>
+                ))}
+              </ChipRow>
+            </MetaRow>
+            <MetaRow>
+              <MetaLabel>가능 시간</MetaLabel>
+              <MetaValue>{profile.availability}</MetaValue>
+            </MetaRow>
+            <Bio>{profile.bio}</Bio>
+            <Timestamp>최근 업데이트: {new Date(profile.updatedAt).toLocaleString('ko-KR')}</Timestamp>
+          </FounderCard>
+        ) : (
+          <EmptyState>
+            아직 창업자 프로필을 등록하지 않았습니다.
+            <InlineButton type="button" onClick={handleEditClick}>
+              지금 등록하기
+            </InlineButton>
+          </EmptyState>
         )}
       </Section>
     </ProfileWrapper>
@@ -154,6 +207,59 @@ const Chip = styled.span`
 const EmptyState = styled.p`
   color: #98a1b3;
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ErrorText = styled.p`
+  color: #dc2626;
+  margin: 0;
+`;
+
+const InlineButton = styled.button`
+  border: none;
+  background: none;
+  color: #2d5bff;
+  font-weight: 600;
+  cursor: pointer;
+`;
+
+const FounderCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const MetaRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const MetaLabel = styled.span`
+  font-size: 0.9rem;
+  color: #8a93a8;
+`;
+
+const MetaValue = styled.span`
+  font-weight: 600;
+  color: #1f2a44;
+`;
+
+const ChipRow = styled(Chips)`
+  gap: 8px;
+`;
+
+const Bio = styled.p`
+  margin: 12px 0 0;
+  line-height: 1.6;
+`;
+
+const Timestamp = styled.span`
+  font-size: 0.85rem;
+  color: #9da3b6;
 `;
 
 
