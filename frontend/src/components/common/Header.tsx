@@ -18,6 +18,7 @@ export const Header = () => {
         <Nav>
           <NavLink to="/">Home</NavLink>
           <NavLink to="/profiles">창업자 찾기</NavLink>
+          <NavLink to="/projects">프로젝트</NavLink>
           {isLoggedIn ? (
             <>
               <NavLink to="/user/profile">마이페이지</NavLink>
